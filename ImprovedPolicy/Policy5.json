@@ -1,0 +1,33 @@
+{
+  "name": "Policy5",
+  "schema_version": 1,
+  "priority": 5,
+  "timestamp": "2024-10-07T10:20:00Z",
+  "enabled": true,
+  "requires_approval": false,
+  "conditions": [
+    {
+      "logic": "AND",
+      "conditions": [
+        {
+          "parameter": "Device.Bandwidth",
+          "operator": "==",
+          "value": "50"
+        },
+        {
+          "parameter": "Device.Temperature",
+          "operator": "<=",
+          "value": "75"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "parameter": "Device.Alert",
+      "target": "NotificationSystem",
+      "name": "SendAlert",
+      "value": "TemperatureNormal"
+    }
+  ]
+}

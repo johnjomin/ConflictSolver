@@ -1,0 +1,33 @@
+{
+  "name": "Policy4",
+  "schema_version": 1,
+  "priority": 4,
+  "timestamp": "2024-10-07T10:15:00Z",
+  "enabled": true,
+  "requires_approval": true,
+  "conditions": [
+    {
+      "logic": "AND",
+      "conditions": [
+        {
+          "parameter": "Device.Memory",
+          "operator": ">=",
+          "value": "50"
+        },
+        {
+          "parameter": "Device.CPU",
+          "operator": ">=",
+          "value": "85"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "parameter": "Device.Throttle",
+      "target": "CPUSystem",
+      "name": "ReduceCPUUsage",
+      "value": "True"
+    }
+  ]
+}

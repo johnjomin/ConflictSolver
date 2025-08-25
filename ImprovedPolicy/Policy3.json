@@ -1,0 +1,33 @@
+{
+  "name": "Policy3",
+  "schema_version": 1,
+  "priority": 3,
+  "timestamp": "2024-10-07T10:10:00Z",
+  "enabled": true,
+  "requires_approval": false,
+  "conditions": [
+    {
+      "logic": "OR",
+      "conditions": [
+        {
+          "parameter": "Device.CPU",
+          "operator": ">=",
+          "value": "80"
+        },
+        {
+          "parameter": "Device.Memory",
+          "operator": "<=",
+          "value": "30"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "parameter": "Device.Alert",
+      "target": "NotificationSystem",
+      "name": "SendAlert",
+      "value": "LowMemory"
+    }
+  ]
+}

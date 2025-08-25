@@ -1,0 +1,30 @@
+{
+  "name": "Policy2",
+  "schema_version": 1,
+  "priority": 1,
+  "enabled": true,
+  "requires_approval": true,
+  "conditions": {
+    "logic": "parameter1.targets.name <= parameter1.value1 OR parameter2.targets.name >= parameter2.value1",
+    "parameter1": {
+      "targets": "Device",
+      "name": "Bandwidth",
+      "unit": "Mbps",
+      "value1": "10"
+    },
+    "parameter2": {
+      "targets": "Device",
+      "name": "Temperature",
+      "unit": "Celsius",
+      "value1": "20"
+    }
+  },
+  "actions": {
+    "parameter1": {
+      "targets": "Device",
+      "name": "CoolingSystem",
+      "unit": "",
+      "value": "OFF"
+    }
+  }
+}

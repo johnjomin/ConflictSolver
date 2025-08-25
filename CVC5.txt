@@ -1,0 +1,128 @@
+import os
+import json
+import cvc5
+from cvc5 import Kind
+
+# Define path to load policies
+POLICY_FOLDER_PATH = './SamplePolicy/'  # Update this path to your folder containing policy JSON files
+
+def load_policies(path):
+    policies = []
+    try:
+        for file_name in os.listdir(path):
+            if file_name.endswith('.json'):
+                file_path = os.path.join(path, file_name)
+                try:
+                    with open(file_path, 'r') as file:
+                        policy = json.load(file)
+                        policies.append(policy)
+                except json.JSONDecodeError:
+                    print(f"Error: Failed to parse JSON in file {file_name}")
+                except Exception as e:
+                    print(f"Error: Failed to read file {file_name} - {e}")
+    except FileNotFoundError:
+        print(f"Error: The folder '{path}' was not found.")
+    except Exception as e:
+        print(f"Error: An unexpected error occurred while loading policies - {e}")
+    return policies
+
+def parse_logic(policy, solver, param_vars):
+    conditions = []
+    try:
+        for condition in policy['conditions']:
+            logic = condition['logic']
+            param1 = condition['parameter1']
+            param1_name = param1['name']
+            param1_value = param1['value1']
+
+            # Define param_var if not already defined
+            if param1_name not in param_vars:
+                if param1_value.isdigit():
+                    param_vars[param1_name] = solver.mkConst(solver.getIntegerSort(), param1_name)
+                    value1 = solver.mkInteger(param1_value)
+                else:
+                    param_vars[param1_name] = solver.mkConst(solver.getStringSort(), param1_name)
+                    value1 = solver.mkString(param1_value)
+            else:
+                value1 = solver.mkString(param1_value) if isinstance(param1_value, str) else solver.mkInteger(param1_value)
+
+            # Parse conditions with CVC5 operators
+            if "==" in logic:
+                conditions.append(solver.mkTerm(Kind.EQUAL, param_vars[param1_name], value1))
+            elif "!=" in logic:
+                conditions.append(solver.mkTerm(Kind.DISTINCT, param_vars[param1_name], value1))
+            elif "<" in logic:
+                conditions.append(solver.mkTerm(Kind.LT, param_vars[param1_name], value1))
+            elif ">" in logic:
+                conditions.append(solver.mkTerm(Kind.GT, param_vars[param1_name], value1))
+            elif "<=" in logic:
+                conditions.append(solver.mkTerm(Kind.LEQ, param_vars[param1_name], value1))
+            elif ">=" in logic:
+                conditions.append(solver.mkTerm(Kind.GEQ, param_vars[param1_name], value1))
+
+        # Combine conditions with AND/OR logic, if applicable
+        if "AND" in logic and len(conditions) > 1:
+            return [solver.mkTerm(Kind.AND, *conditions)]
+        elif "OR" in logic and len(conditions) > 1:
+            return [solver.mkTerm(Kind.OR, *conditions)]
+        else:
+            return conditions  # Return as-is if there's only one condition
+    except KeyError as e:
+        print(f"Error: Missing key in policy logic - {e}")
+    except Exception as e:
+        print(f"Error: An unexpected error occurred while parsing logic - {e}")
+    return conditions
+
+
+def check_conflicts(policies):
+    conflicts = []
+    solver = cvc5.Solver()
+
+    try:
+        for i, policy1 in enumerate(policies):
+            for j, policy2 in enumerate(policies[i+1:], i+1):
+                solver.push()
+
+                param_vars1 = {}
+                param_vars2 = {}
+
+                # Parse conditions for both policies
+                conditions1 = parse_logic(policy1, solver, param_vars1)
+                conditions2 = parse_logic(policy2, solver, param_vars2)
+
+                # Add conditions for policy1 to the solver
+                for cond in conditions1:
+                    solver.assertFormula(cond)
+
+                # Add conditions for policy2 to the solver
+                for cond in conditions2:
+                    solver.assertFormula(cond)
+
+                # Check for satisfiability of combined conditions
+                result = solver.checkSat()
+                
+                if result.isUnsat():
+                    conflicts.append((policy1['name'], policy2['name']))
+
+                solver.pop()
+    except Exception as e:
+        print(f"Error: An unexpected error occurred while checking for conflicts - {e}")
+
+    return conflicts
+
+
+if __name__ == '__main__':
+    try:
+        policies = load_policies(POLICY_FOLDER_PATH)
+        if not policies:
+            print("No policies loaded. Please check your policy files.")
+        else:
+            conflicts = check_conflicts(policies)
+            if conflicts:
+                print("Conflicts detected between policies:")
+                for policy1, policy2 in conflicts:
+                    print(f" - Conflict between {policy1} and {policy2}")
+            else:
+                print("No conflicts detected.")
+    except Exception as e:
+        print(f"Error: An unexpected error occurred in the main process - {e}")

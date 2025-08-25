@@ -1,0 +1,31 @@
+{
+  "name": "Policy3",
+  "schema_version": 1,
+  "priority": 3,
+  "enabled": true,
+  "requires_approval": true,
+  "conditions": [
+    {
+      "logic": "parameter1.targets.name != parameter1.name AND parameter2.targets.name <= parameter2.value1",
+      "parameter1": {
+        "targets": "Device",
+        "name": "FanSpeed",
+        "value1": "HIGH"
+      },
+      "parameter2": {
+        "targets": "Device",
+        "name": "AirQuality",
+        "value1": "GOOD"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "parameter1": {
+        "targets": "Device",
+        "name": "Ventilation",
+        "value": "HIGH"
+      }
+    }
+  ]
+}

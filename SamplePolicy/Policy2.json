@@ -1,0 +1,31 @@
+{
+  "name": "Policy2",
+  "schema_version": 1,
+  "priority": 2,
+  "enabled": true,
+  "requires_approval": false,
+  "conditions": [
+    {
+      "logic": "parameter1.targets.name == parameter1.name OR parameter2.targets.name > parameter2.value1",
+      "parameter1": {
+        "targets": "Device",
+        "name": "Temperature",
+        "value1": "15"
+      },
+      "parameter2": {
+        "targets": "Device",
+        "name": "Humidity",
+        "value1": "45"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "parameter1": {
+        "targets": "Device",
+        "name": "CoolingSystem",
+        "value": "OFF"
+      }
+    }
+  ]
+}
