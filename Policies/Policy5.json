@@ -1,0 +1,30 @@
+{
+  "name": "Policy5",
+  "schema_version": 1,
+  "priority": 4,
+  "enabled": true,
+  "requires_approval": true,
+  "conditions": {
+    "logic": "parameter1.targets.name > parameter1.value1 AND parameter2.targets.name >= parameter2.value1",
+    "parameter1": {
+      "targets": "Device",
+      "name": "Humidity",
+      "unit": "%",
+      "value1": "60"
+    },
+    "parameter2": {
+      "targets": "Device",
+      "name": "Pressure",
+      "unit": "kPa",
+      "value1": "101.3"
+    }
+  },
+  "actions": {
+    "parameter1": {
+      "targets": "Device",
+      "name": "AlertSystem",
+      "unit": "",
+      "value": "ACTIVATE"
+    }
+  }
+}
